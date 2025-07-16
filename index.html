@@ -1,0 +1,1986 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Attribution Dashboard</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/3.9.1/chart.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/d3/7.8.5/d3.min.js"></script>
+    <script src="https://unpkg.com/d3-sankey@0.12.3/dist/d3-sankey.min.js"></script>
+    <!-- Highcharts -->
+    <script src="https://code.highcharts.com/highcharts.js"></script>
+    <script src="https://code.highcharts.com/highcharts-3d.js"></script>
+    <script src="https://code.highcharts.com/highcharts-more.js"></script>
+    <script src="https://code.highcharts.com/modules/solid-gauge.js"></script>
+    <script src="https://code.highcharts.com/modules/data.js"></script>
+    <script src="https://code.highcharts.com/modules/exporting.js"></script>
+    <script src="https://code.highcharts.com/modules/export-data.js"></script>
+    <script src="https://code.highcharts.com/modules/accessibility.js"></script>
+    <!-- Font Awesome -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+    <!-- Anime.js -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/animejs/3.2.1/anime.min.js"></script>
+    <!-- jsPDF for PDF generation -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.5.28/jspdf.plugin.autotable.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+    <header>
+        <div class="container header-content">
+            <div class="logo"><img src="img/rl.svg" alt="RepairLift Attribution Logo" class="logo-img"></div>
+            <div class="store-title">
+                <h1 id="store-name">Cellular Zone</h1>
+                <p class="store-subtitle">Analytics Dashboard</p>
+            </div>
+            <div>
+                <div class="filter-container">
+                    <div class="filter-group">
+                        <label for="date-filter">Date:</label>
+                        <select id="date-filter" class="filter-select">
+                            <option value="all">All Dates</option>
+                            <option value="jan-2025">January 2025</option>
+                            <option value="feb-2025">February 2025</option>
+                            <option value="mar-2025">March 2025</option>
+                            <option value="apr-2025">April 2025</option>
+                        </select>
+                    </div>
+
+                    <div class="filter-group">
+                        <label for="location-filter">Location:</label>
+                        <select id="location-filter" class="filter-select">
+                            <option value="all">All Locations</option>
+                            <!-- Dynamic locations will be populated by JavaScript -->
+                            <!-- Dynamic locations will be populated by JavaScript -->
+                            </select>
+                    </div>
+
+                    <div class="custom-date-range" id="custom-date-range" style="display: none;">
+                        <input type="date" id="start-date" class="date-input">
+                        <span>to</span>
+                        <input type="date" id="end-date" class="date-input">
+                        <button id="apply-date-range" class="btn btn-small">Apply</button>
+                    </div>
+                    <button id="custom-range-toggle" class="btn btn-small">Custom Range</button>
+                </div>
+            </div>
+        </div>
+    </header>
+
+    <!-- Tab Navigation -->
+    <div class="tab-container container">
+        <div class="tabs">
+            <button class="tab-button active" data-tab="lead-report">Lead Report</button>
+            <button class="tab-button" data-tab="sales-report">Sales Report</button>
+            <button class="tab-button" data-tab="google-ads-report">Google Ads Report</button>
+            <button class="tab-button" data-tab="meta-ads-report">Meta Ads Report</button>
+            <button class="tab-button" data-tab="master-overview">Master Overview</button>
+        </div>
+
+
+    </div>
+
+    <!-- Tab Content -->
+    <main class="dashboard">
+        <!-- Lead Report Tab -->
+        <div class="tab-content active" id="lead-report">
+            <div class="container">
+                <div class="dashboard-title">
+                    <h1>Lead Report Dashboard</h1>
+                </div>
+                <p class="dashboard-subtitle">Track lead generation performance across channels and sources</p>
+
+                <!-- Lead Report Data Controls -->
+                <div class="data-controls">
+                    <div class="data-status">
+                        <span id="lead-data-status-text">📊 Loading lead data...</span>
+                        <span id="lead-cache-status" class="cache-info"></span>
+                    </div>
+
+                    <!-- Lead Date Filters -->
+                    <div class="ghl-date-filters">
+                        <div class="filter-group">
+                            <label for="lead-date-filter">📅 Date Range:</label>
+                            <select id="lead-date-filter" class="filter-select">
+                                <option value="all">All Data</option>
+                                <option value="last-14" selected>Last 14 Days</option>
+                                <option value="last-30">Last 30 Days</option>
+                                <option value="last-60">Last 60 Days</option>
+                                <option value="last-90">Last 90 Days</option>
+                                <option value="custom">Custom Range</option>
+                            </select>
+                        </div>
+
+                        <div class="filter-group ghl-custom-date-range" id="lead-custom-date-range" style="display: none;">
+                            <input type="date" id="lead-start-date" class="date-input">
+                            <span>to</span>
+                            <input type="date" id="lead-end-date" class="date-input">
+                            <button id="lead-apply-date-range" class="btn btn-small">Apply</button>
+                        </div>
+
+                        <div class="filter-group">
+                            <div class="lead-date-info" id="lead-date-info">
+                                <i class="fas fa-info-circle"></i>
+                                <span id="lead-date-range-info">Showing all available data</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="data-buttons">
+                        <button id="lead-load-all-data" class="control-btn secondary" title="Load complete historical lead data">
+                            📚 Load All Data
+                        </button>
+                        <button id="lead-refresh-data" class="control-btn primary" title="Refresh current lead data">
+                            🔄 Refresh Data
+                        </button>
+                        <button id="lead-clear-cache" class="control-btn secondary" title="Clear lead cache and reload">
+                            🗑️ Clear Cache
+                        </button>
+                    </div>
+                </div>
+
+                <!-- KPI Stats Cards -->
+                <div class="stats-grid">
+                    <div class="stat-card">
+                        <div class="stat-card-header">
+                            <div class="stat-card-title">Total Leads</div>
+                            <div class="stat-card-icon icon-primary">
+                                <i class="fas fa-users fa-lg"></i>
+                            </div>
+                        </div>
+                        <div class="stat-card-value" id="lead-count">0</div>
+                        <div class="stat-card-trend">
+                            <span class="trend-info">Total leads count</span>
+                        </div>
+                    </div>
+
+                    <div class="stat-card">
+                        <div class="stat-card-header">
+                            <div class="stat-card-title">Google Leads</div>
+                            <div class="stat-card-icon icon-secondary">
+                                <i class="fab fa-google fa-lg"></i>
+                            </div>
+                        </div>
+                        <div class="stat-card-value" id="google-leads">0</div>
+                        <div class="stat-card-trend">
+                            <span class="trend-info">Google Paid + Organic</span>
+                        </div>
+                    </div>
+
+                    <div class="stat-card">
+                        <div class="stat-card-header">
+                            <div class="stat-card-title">Meta Leads</div>
+                            <div class="stat-card-icon icon-warning">
+                                <i class="fab fa-facebook fa-lg"></i>
+                            </div>
+                        </div>
+                        <div class="stat-card-value" id="meta-leads">0</div>
+                        <div class="stat-card-trend">
+                            <span class="trend-info">Facebook & Instagram ads</span>
+                        </div>
+                    </div>
+
+                    <div class="stat-card">
+                        <div class="stat-card-header">
+                            <div class="stat-card-title">Other Sources</div>
+                            <div class="stat-card-icon icon-secondary">
+                                <i class="fas fa-globe fa-lg"></i>
+                            </div>
+                        </div>
+                        <div class="stat-card-value" id="other-leads">0</div>
+                        <div class="stat-card-trend">
+                            <span class="trend-info">Other traffic sources</span>
+                        </div>
+                    </div>
+
+                    <div class="stat-card">
+                        <div class="stat-card-header">
+                            <div class="stat-card-title">Avg. Lead Value</div>
+                            <div class="stat-card-icon icon-success">
+                                <i class="fas fa-dollar-sign fa-lg"></i>
+                            </div>
+                        </div>
+                        <div class="stat-card-value" id="avg-lead-value">$0</div>
+                        <div class="stat-card-trend">
+                            <span class="trend-info">Average value per lead</span>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Lead Volume Chart -->
+                <div class="chart-card">
+                    <div class="chart-container">
+                        <h2 class="chart-title">Lead Volume by Source</h2>
+
+                        <figure class="highcharts-figure">
+                            <div id="leadVolumeChart"></div>
+                            <div id="button-bar">
+                                <button id="line" class="highcharts-demo-button">Line</button>
+                                <button id="column" class="highcharts-demo-button">Column</button>
+                                <button id="area" class="highcharts-demo-button">Area</button>
+                                <button id="small" class="highcharts-demo-button">Small</button>
+                                <button id="large" class="highcharts-demo-button">Large</button>
+                                <button id="auto" class="highcharts-demo-button">Auto</button>
+                            </div>
+                        </figure>
+                    </div>
+                </div>
+
+                <!-- Source and Channel Charts -->
+                <div class="chart-row">
+                    <div class="chart-card">
+                        <h2 class="chart-title">Lead Sources</h2>
+                        <div class="chart-container">
+                            <figure class="highcharts-figure">
+                                <div id="sourceChart"></div>
+                            </figure>
+                        </div>
+                    </div>
+
+                    <div class="chart-card">
+                        <h2 class="chart-title">Channel Distribution</h2>
+                        <div class="chart-container">
+                            <figure class="highcharts-figure">
+                                <div id="channelChart"></div>
+                                <div id="channel-sliders">
+                                    <table>
+                                        <tr>
+                                            <td><label for="alpha">Alpha Angle</label></td>
+                                            <td><input id="alpha" type="range" min="0" max="45" value="15"/> <span id="alpha-value" class="value"></span></td>
+                                        </tr>
+                                        <tr>
+                                            <td><label for="beta">Beta Angle</label></td>
+                                            <td><input id="beta" type="range" min="-45" max="45" value="15"/> <span id="beta-value" class="value"></span></td>
+                                        </tr>
+                                        <tr>
+                                            <td><label for="depth">Depth</label></td>
+                                            <td><input id="depth" type="range" min="20" max="100" value="50"/> <span id="depth-value" class="value"></span></td>
+                                        </tr>
+                                    </table>
+                                </div>
+                            </figure>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- POS Data Section has been moved to the Sales Report tab -->
+            </div>
+        </div>
+
+        <!-- Sales Report Tab -->
+        <div class="tab-content" id="sales-report">
+            <div class="container">
+                <div class="dashboard-title">
+                    <h1>Sales Report Dashboard</h1>
+                </div>
+                <p class="dashboard-subtitle">Track sales performance and customer conversion analytics</p>
+
+                <!-- Matching Summary Stats -->
+                <div class="stats-grid">
+
+
+
+
+
+
+
+
+                </div>
+
+                <!-- Location Performance Charts -->
+                <div class="chart-row">
+                    <div class="chart-card">
+                        <h2 class="chart-title">Revenue by Location</h2>
+                        <div class="chart-container">
+                            <figure class="highcharts-figure">
+                                <div id="locationRevenueChart"></div>
+                            </figure>
+                        </div>
+                    </div>
+
+                    <div class="chart-card">
+                        <h2 class="chart-title">Transactions by Location</h2>
+                        <div class="chart-container">
+                            <figure class="highcharts-figure">
+                                <div id="locationTransactionsChart"></div>
+                            </figure>
+                        </div>
+                    </div>
+                </div>
+
+
+
+                <!-- Matching Details -->
+                <div class="chart-row">
+
+
+                </div>
+
+                <!-- Conversion Timeline chart has been removed -->
+
+
+            </div>
+        </div>
+
+        <!-- Google Ads Report Tab -->
+        <div class="tab-content" id="google-ads-report">
+            <div class="container">
+                <div class="dashboard-title">
+                    <h1>Google Ads Performance Analysis</h1>
+
+                </div>
+                <p class="dashboard-subtitle">Track Google Ads performance metrics and optimize your ad spend</p>
+
+                <!-- Google Ads Date Filters (Safe Implementation) -->
+                <div class="gads-date-filters">
+                    <div class="filter-group">
+                        <label for="gads-date-filter">📅 Date Range:</label>
+                        <select id="gads-date-filter" class="filter-select">
+                            <option value="all">All Data</option>
+                            <option value="last-14">Last 14 Days</option>
+                            <option value="last-30" selected>Last 30 Days</option>
+                            <option value="last-60">Last 60 Days</option>
+                            <option value="last-90">Last 90 Days</option>
+                            <option value="custom">Custom Range</option>
+                        </select>
+                    </div>
+
+                    <div class="filter-group gads-custom-date-range" id="gads-custom-date-range" style="display: none;">
+                        <input type="date" id="gads-start-date" class="date-input">
+                        <span>to</span>
+                        <input type="date" id="gads-end-date" class="date-input">
+                        <button id="gads-apply-date-range" class="btn btn-small">Apply</button>
+                    </div>
+
+                    <div class="filter-group">
+                        <div class="gads-date-info" id="gads-date-info">
+                            <i class="fas fa-info-circle"></i>
+                            <span id="gads-date-range-text">Showing all available data</span>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Google Ads Summary Stats -->
+                <div class="stats-grid" id="gads-stats-grid">
+                    <div class="stat-card">
+                        <div class="stat-card-header">
+                            <div class="stat-card-title">Total Clicks</div>
+                            <div class="stat-card-icon icon-primary">
+                                <i class="fas fa-mouse-pointer fa-lg"></i>
+                            </div>
+                        </div>
+                        <div class="stat-card-value" id="total-clicks">0</div>
+                        <div class="stat-card-trend">
+                            <span class="trend-info">Total ad clicks</span>
+                        </div>
+                    </div>
+
+                    <div class="stat-card">
+                        <div class="stat-card-header">
+                            <div class="stat-card-title">Total Impressions</div>
+                            <div class="stat-card-icon icon-secondary">
+                                <i class="fas fa-eye fa-lg"></i>
+                            </div>
+                        </div>
+                        <div class="stat-card-value" id="total-impressions">0</div>
+                        <div class="stat-card-trend">
+                            <span class="trend-info">Total ad views</span>
+                        </div>
+                    </div>
+
+                    <div class="stat-card">
+                        <div class="stat-card-header">
+                            <div class="stat-card-title">Average CTR</div>
+                            <div class="stat-card-icon icon-warning">
+                                <i class="fas fa-percentage fa-lg"></i>
+                            </div>
+                        </div>
+                        <div class="stat-card-value" id="avg-ctr">0%</div>
+                        <div class="stat-card-trend">
+                            <span class="trend-info">Click-through rate</span>
+                        </div>
+                    </div>
+
+                    <div class="stat-card">
+                        <div class="stat-card-header">
+                            <div class="stat-card-title">Average CPC</div>
+                            <div class="stat-card-icon icon-info">
+                                <i class="fas fa-tags fa-lg"></i>
+                            </div>
+                        </div>
+                        <div class="stat-card-value" id="avg-cpc">$0.00</div>
+                        <div class="stat-card-trend">
+                            <span class="trend-info">Cost per click</span>
+                        </div>
+                    </div>
+
+                    <div class="stat-card">
+                        <div class="stat-card-header">
+                            <div class="stat-card-title">Total Cost</div>
+                            <div class="stat-card-icon icon-success">
+                                <i class="fas fa-dollar-sign fa-lg"></i>
+                            </div>
+                        </div>
+                        <div class="stat-card-value" id="total-cost">$0.00</div>
+                        <div class="stat-card-trend">
+                            <span class="trend-info">Total ad spend</span>
+                        </div>
+                    </div>
+
+                    <!-- Enhanced metrics (shown only with new data format) -->
+                    <div class="stat-card enhanced-metric" id="conversions-card" style="display: none;">
+                        <div class="stat-card-header">
+                            <div class="stat-card-title">Total Conversions</div>
+                            <div class="stat-card-icon icon-success">
+                                <i class="fas fa-bullseye fa-lg"></i>
+                            </div>
+                        </div>
+                        <div class="stat-card-value" id="total-conversions">0</div>
+                        <div class="stat-card-trend">
+                            <span class="trend-info">Total conversions</span>
+                        </div>
+                    </div>
+
+                    <div class="stat-card enhanced-metric" id="conversion-rate-card" style="display: none;">
+                        <div class="stat-card-header">
+                            <div class="stat-card-title">Conversion Rate</div>
+                            <div class="stat-card-icon icon-warning">
+                                <i class="fas fa-chart-line fa-lg"></i>
+                            </div>
+                        </div>
+                        <div class="stat-card-value" id="avg-conversion-rate">0%</div>
+                        <div class="stat-card-trend">
+                            <span class="trend-info">Click to conversion rate</span>
+                        </div>
+                    </div>
+
+                    <div class="stat-card enhanced-metric" id="cost-per-conversion-card" style="display: none;">
+                        <div class="stat-card-header">
+                            <div class="stat-card-title">Cost per Conversion</div>
+                            <div class="stat-card-icon icon-info">
+                                <i class="fas fa-calculator fa-lg"></i>
+                            </div>
+                        </div>
+                        <div class="stat-card-value" id="avg-cost-per-conversion">$0.00</div>
+                        <div class="stat-card-trend">
+                            <span class="trend-info">Average cost per conversion</span>
+                        </div>
+                    </div>
+
+                    <div class="stat-card enhanced-metric" id="campaign-count-card" style="display: none;">
+                        <div class="stat-card-header">
+                            <div class="stat-card-title">Active Campaigns</div>
+                            <div class="stat-card-icon icon-primary">
+                                <i class="fas fa-rocket fa-lg"></i>
+                            </div>
+                        </div>
+                        <div class="stat-card-value" id="campaign-count">0</div>
+                        <div class="stat-card-trend">
+                            <span class="trend-info">Total campaigns</span>
+                        </div>
+                    </div>
+                </div>
+                <!-- Location Performance Cards Section -->
+                <div class="location-performance-section" id="location-performance-section">
+                    <div class="section-header">
+                        <h2 class="section-title">
+                            <i class="fas fa-map-marker-alt"></i>
+                            Performance by Location
+                        </h2>
+                        <p class="section-subtitle">Google Ads performance breakdown by store location</p>
+                    </div>
+
+                    <div class="location-cards-container" id="location-cards-container">
+                        <!-- Location cards will be populated by JavaScript -->
+                        <div class="location-card-placeholder">
+                            <div class="placeholder-content">
+                                <i class="fas fa-spinner fa-spin"></i>
+                                <span>Loading location data...</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+
+
+
+
+                <!-- Daily Performance Table -->
+                <div class="chart-card">
+                    <h2 class="chart-title">Daily Performance Data</h2>
+                    <div class="table-container" id="gads-performance-table">
+                        <!-- Table will be populated by JavaScript -->
+                    </div>
+                </div>
+
+                <!-- Google Ads Recent Performance - Full Width Monthly Breakdown Card -->
+                <div class="gads-recent-performance-card" data-metric="gads-recent-performance">
+                    <div class="recent-performance-header">
+                        <div class="recent-performance-title">
+                            <div class="title-icon">
+                                <i class="fas fa-calendar-alt"></i>
+                            </div>
+                            <div class="title-content">
+                                <h3>Recent Performance</h3>
+                                <p>Last 3 months breakdown and month-to-month comparison</p>
+                            </div>
+                        </div>
+                        <div class="recent-performance-date-range" id="gads-recent-performance-date-range">
+                            <i class="fas fa-calendar-check"></i>
+                            <span>Loading date range...</span>
+                        </div>
+                    </div>
+
+                    <div class="monthly-breakdown-grid">
+                        <!-- March 2025 -->
+                        <div class="monthly-card" data-month="march">
+                            <div class="monthly-header">
+                                <div class="month-name">March 2025</div>
+                                <div class="month-trend" id="gads-march-trend">
+                                    <i class="fas fa-minus"></i>
+                                    <span>--</span>
+                                </div>
+                            </div>
+                            <div class="monthly-metrics">
+                                <div class="metric-row">
+                                    <div class="metric-item">
+                                        <div class="metric-label">Ad Spend</div>
+                                        <div class="metric-value" id="gads-march-spend">$0.00</div>
+                                    </div>
+                                    <div class="metric-item">
+                                        <div class="metric-label">Clicks</div>
+                                        <div class="metric-value" id="gads-march-clicks">0</div>
+                                    </div>
+                                </div>
+                                <div class="metric-row">
+                                    <div class="metric-item">
+                                        <div class="metric-label">Impressions</div>
+                                        <div class="metric-value" id="gads-march-impressions">0</div>
+                                    </div>
+                                    <div class="metric-item">
+                                        <div class="metric-label">CPC</div>
+                                        <div class="metric-value" id="gads-march-cpc">$0.00</div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- April 2025 -->
+                        <div class="monthly-card" data-month="april">
+                            <div class="monthly-header">
+                                <div class="month-name">April 2025</div>
+                                <div class="month-trend" id="gads-april-trend">
+                                    <i class="fas fa-minus"></i>
+                                    <span>--</span>
+                                </div>
+                            </div>
+                            <div class="monthly-metrics">
+                                <div class="metric-row">
+                                    <div class="metric-item">
+                                        <div class="metric-label">Ad Spend</div>
+                                        <div class="metric-value" id="gads-april-spend">$0.00</div>
+                                    </div>
+                                    <div class="metric-item">
+                                        <div class="metric-label">Clicks</div>
+                                        <div class="metric-value" id="gads-april-clicks">0</div>
+                                    </div>
+                                </div>
+                                <div class="metric-row">
+                                    <div class="metric-item">
+                                        <div class="metric-label">Impressions</div>
+                                        <div class="metric-value" id="gads-april-impressions">0</div>
+                                    </div>
+                                    <div class="metric-item">
+                                        <div class="metric-label">CPC</div>
+                                        <div class="metric-value" id="gads-april-cpc">$0.00</div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- May 2025 -->
+                        <div class="monthly-card" data-month="may">
+                            <div class="monthly-header">
+                                <div class="month-name">May 2025</div>
+                                <div class="month-trend" id="gads-may-trend">
+                                    <i class="fas fa-minus"></i>
+                                    <span>--</span>
+                                </div>
+                            </div>
+                            <div class="monthly-metrics">
+                                <div class="metric-row">
+                                    <div class="metric-item">
+                                        <div class="metric-label">Ad Spend</div>
+                                        <div class="metric-value" id="gads-may-spend">$0.00</div>
+                                    </div>
+                                    <div class="metric-item">
+                                        <div class="metric-label">Clicks</div>
+                                        <div class="metric-value" id="gads-may-clicks">0</div>
+                                    </div>
+                                </div>
+                                <div class="metric-row">
+                                    <div class="metric-item">
+                                        <div class="metric-label">Impressions</div>
+                                        <div class="metric-value" id="gads-may-impressions">0</div>
+                                    </div>
+                                    <div class="metric-item">
+                                        <div class="metric-label">CPC</div>
+                                        <div class="metric-value" id="gads-may-cpc">$0.00</div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Month-to-Month Comparison Summary -->
+                    <div class="monthly-comparison-summary">
+                        <div class="comparison-title">Month-to-Month Changes</div>
+                        <div class="comparison-grid">
+                            <div class="comparison-item">
+                                <div class="comparison-label">Apr vs Mar</div>
+                                <div class="comparison-value" id="gads-apr-vs-mar">
+                                    <span class="change-indicator">--</span>
+                                    <span class="change-text">No data</span>
+                                </div>
+                            </div>
+                            <div class="comparison-item">
+                                <div class="comparison-label">May vs Apr</div>
+                                <div class="comparison-value" id="gads-may-vs-apr">
+                                    <span class="change-indicator">--</span>
+                                    <span class="change-text">No data</span>
+                                </div>
+                            </div>
+                            <div class="comparison-item">
+                                <div class="comparison-label">3-Month Trend</div>
+                                <div class="comparison-value" id="gads-three-month-trend">
+                                    <span class="change-indicator">--</span>
+                                    <span class="change-text">Calculating...</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+
+            </div>
+        </div>
+
+        <!-- Meta Ads Report Tab -->
+        <div class="tab-content" id="meta-ads-report">
+            <div class="container">
+                <div class="dashboard-title">
+                    <h1>Meta Ads Performance Analysis</h1>
+
+                </div>
+                <p class="dashboard-subtitle">Track Facebook & Instagram advertising performance and optimize your Meta ad spend</p>
+
+
+
+                <!-- Meta Ads Report Filters -->
+                <div class="sales-report-filters">
+                    <div class="filter-group">
+                        <label for="meta-ads-date-filter">Date Range:</label>
+                        <select id="meta-ads-date-filter" class="filter-select">
+                            <option value="last-14-days">Last 14 Days</option>
+                            <option value="last-30-days" selected>Last 30 Days</option>
+                            <option value="last-45-days">Last 45 Days</option>
+                            <option value="last-60-days">Last 60 Days</option>
+                            <option value="last-90-days">Last 90 Days</option>
+                            <option value="custom-range">Custom Range</option>
+                        </select>
+                    </div>
+
+                    <div class="filter-group sales-custom-date-range" id="meta-ads-custom-date-range" style="display: none;">
+                        <input type="date" id="meta-ads-start-date" class="date-input">
+                        <span>to</span>
+                        <input type="date" id="meta-ads-end-date" class="date-input">
+                        <button id="meta-ads-apply-date-range" class="btn btn-small">Apply</button>
+                    </div>
+
+                    <div class="filter-group">
+                        <label for="meta-ads-grouping">Group By:</label>
+                        <select id="meta-ads-grouping" class="filter-select">
+                            <option value="day">Day</option>
+                            <option value="week">Week</option>
+                            <option value="month" selected>Month</option>
+                        </select>
+                    </div>
+
+                    <div class="filter-group">
+                        <button id="meta-ads-refresh-data" class="btn btn-small">
+                            <i class="fas fa-sync-alt"></i> Refresh
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Meta Ads Summary Container -->
+                <div class="meta-ads-summary-container">
+                    <!-- Date Range Header -->
+                    <div class="meta-summary-header">
+                        <div class="meta-date-range">
+                            <i class="fab fa-meta"></i>
+                            <span id="meta-date-range-text">Loading date range...</span>
+                        </div>
+                        <div class="meta-attribution-info">
+                            <i class="fas fa-info-circle"></i>
+                            <span>Attribution: <span id="meta-attribution-method">Loading...</span></span>
+                        </div>
+                    </div>
+
+                    <!-- Data Attribution Notice Panel -->
+                    <div class="data-attribution-notice">
+                        <div class="attribution-notice-header">
+                            <i class="fas fa-info-circle"></i>
+                            <span>Data Attribution Notice</span>
+                        </div>
+                        <div class="attribution-notice-content">
+                            <div class="attribution-section">
+                                <div class="attribution-label">ATTRIBUTION MODEL</div>
+                                <div class="attribution-description">Multiple attribution settings configured to optimize cross-platform tracking and measurement accuracy.</div>
+                            </div>
+                            <div class="attribution-section">
+                                <div class="attribution-label">DEDUPLICATION METHOD</div>
+                                <div class="attribution-description">Meta's unified identity graph prevents duplicate counting across Facebook and Instagram touchpoints.</div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Key Metrics Grid -->
+                    <div class="meta-metrics-grid">
+                        <div class="meta-metric-card" data-metric="reach">
+                            <div class="metric-icon">
+                                <i class="fas fa-users"></i>
+                            </div>
+                            <div class="metric-content">
+                                <div class="metric-label">Total Reach</div>
+                                <div class="metric-value" id="meta-reach-value">0</div>
+                                <div class="metric-subtitle">Unique people reached</div>
+                            </div>
+                        </div>
+
+                        <div class="meta-metric-card" data-metric="impressions">
+                            <div class="metric-icon">
+                                <i class="fas fa-eye"></i>
+                            </div>
+                            <div class="metric-content">
+                                <div class="metric-label">Total Impressions</div>
+                                <div class="metric-value" id="meta-impressions-value">0</div>
+                                <div class="metric-subtitle">Total ad views</div>
+                            </div>
+                        </div>
+
+                        <div class="meta-metric-card" data-metric="spend">
+                            <div class="metric-icon">
+                                <i class="fas fa-dollar-sign"></i>
+                            </div>
+                            <div class="metric-content">
+                                <div class="metric-label">Amount Spent</div>
+                                <div class="metric-value" id="meta-spend-value">$0.00</div>
+                                <div class="metric-subtitle">Total ad investment</div>
+                            </div>
+                        </div>
+
+
+
+                        <div class="meta-metric-card" data-metric="frequency">
+                            <div class="metric-icon">
+                                <i class="fas fa-repeat"></i>
+                            </div>
+                            <div class="metric-content">
+                                <div class="metric-label">Frequency</div>
+                                <div class="metric-value" id="meta-frequency-value">0.0</div>
+                                <div class="metric-subtitle">Avg times shown per person</div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Meta Ads Analytics Cards -->
+                    <div class="meta-analytics-section">
+                        <h2 class="analytics-section-title">Performance Analytics</h2>
+                        <div class="meta-analytics-grid">
+                            <!-- Cost per Result Card -->
+                            <div class="meta-analytics-card" data-metric="cpr">
+                                <div class="analytics-card-header">
+                                    <div class="analytics-card-icon">
+                                        <i class="fas fa-calculator"></i>
+                                    </div>
+                                    <div class="analytics-card-trend" id="cpr-trend">
+                                        <i class="fas fa-minus"></i>
+                                        <span>--</span>
+                                    </div>
+                                </div>
+                                <div class="analytics-card-content">
+                                    <div class="analytics-card-title">Cost per Result (CPR)</div>
+                                    <div class="analytics-card-value" id="cpr-value">$0.00</div>
+                                    <div class="analytics-card-subtitle">Lower is better • Target: $0.15</div>
+                                    <div class="analytics-card-date-range" id="cpr-date-range">
+                                        <i class="fas fa-calendar-alt"></i>
+                                        <span>Loading date range...</span>
+                                    </div>
+                                    <div class="analytics-card-context">
+                                        <span class="context-label">Efficiency:</span>
+                                        <span class="context-value" id="cpr-efficiency">Calculating...</span>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- Total Results Card -->
+                            <div class="meta-analytics-card" data-metric="results">
+                                <div class="analytics-card-header">
+                                    <div class="analytics-card-icon">
+                                        <i class="fas fa-bullseye"></i>
+                                    </div>
+                                    <div class="analytics-card-trend" id="results-trend">
+                                        <i class="fas fa-minus"></i>
+                                        <span>--</span>
+                                    </div>
+                                </div>
+                                <div class="analytics-card-content">
+                                    <div class="analytics-card-title">Total Results</div>
+                                    <div class="analytics-card-value" id="results-value">0</div>
+                                    <div class="analytics-card-subtitle">Conversions & leads generated</div>
+                                    <div class="analytics-card-date-range" id="results-date-range">
+                                        <i class="fas fa-calendar-alt"></i>
+                                        <span>Loading date range...</span>
+                                    </div>
+                                    <div class="analytics-card-context">
+                                        <span class="context-label">Performance:</span>
+                                        <span class="context-value" id="results-performance">Calculating...</span>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- Total Spend Card -->
+                            <div class="meta-analytics-card" data-metric="spend">
+                                <div class="analytics-card-header">
+                                    <div class="analytics-card-icon">
+                                        <i class="fas fa-dollar-sign"></i>
+                                    </div>
+                                    <div class="analytics-card-trend" id="spend-trend">
+                                        <i class="fas fa-minus"></i>
+                                        <span>--</span>
+                                    </div>
+                                </div>
+                                <div class="analytics-card-content">
+                                    <div class="analytics-card-title">Total Spend</div>
+                                    <div class="analytics-card-value" id="spend-value">$0</div>
+                                    <div class="analytics-card-subtitle">Total advertising investment</div>
+                                    <div class="analytics-card-date-range" id="spend-date-range">
+                                        <i class="fas fa-calendar-alt"></i>
+                                        <span>Loading date range...</span>
+                                    </div>
+                                    <div class="analytics-card-context">
+                                        <span class="context-label">Daily Avg:</span>
+                                        <span class="context-value" id="spend-daily-avg">Calculating...</span>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- Performance Categories Card -->
+                            <div class="meta-analytics-card performance-card" data-metric="categories">
+                                <div class="analytics-card-header">
+                                    <div class="analytics-card-icon">
+                                        <i class="fas fa-chart-pie"></i>
+                                    </div>
+                                    <div class="analytics-card-trend" id="categories-trend">
+                                        <i class="fas fa-chart-line"></i>
+                                        <span>43 ads</span>
+                                    </div>
+                                </div>
+                                <div class="analytics-card-content">
+                                    <div class="analytics-card-title">Performance Categories</div>
+                                    <div class="analytics-card-value" id="categories-total">0</div>
+                                    <div class="analytics-card-subtitle">Lifetime ad performance distribution</div>
+                                    <div class="analytics-card-date-range" id="categories-date-range">
+                                        <i class="fas fa-calendar-alt"></i>
+                                        <span>Loading date range...</span>
+                                    </div>
+
+                                    <!-- Performance Categories Grid -->
+                                    <div class="performance-categories-grid" id="performance-categories">
+                                        <div class="category-item excellent" data-category="good-performer">
+                                            <div class="category-header">
+                                                <div class="category-icon">✅</div>
+                                                <div class="category-badge excellent">Excellent</div>
+                                            </div>
+                                            <div class="category-content">
+                                                <div class="category-name">Good Performer</div>
+                                                <div class="category-count">0 ads</div>
+                                                <div class="category-description">Low cost, high results</div>
+                                            </div>
+                                        </div>
+
+                                        <div class="category-item good" data-category="average">
+                                            <div class="category-header">
+                                                <div class="category-icon">📈</div>
+                                                <div class="category-badge good">Good</div>
+                                            </div>
+                                            <div class="category-content">
+                                                <div class="category-name">Average</div>
+                                                <div class="category-count">0 ads</div>
+                                                <div class="category-description">Standard performance</div>
+                                            </div>
+                                        </div>
+
+                                        <div class="category-item warning" data-category="high-cost">
+                                            <div class="category-header">
+                                                <div class="category-icon">💸</div>
+                                                <div class="category-badge warning">Review</div>
+                                            </div>
+                                            <div class="category-content">
+                                                <div class="category-name">High Cost</div>
+                                                <div class="category-count">0 ads</div>
+                                                <div class="category-description">Above target CPR</div>
+                                            </div>
+                                        </div>
+
+                                        <div class="category-item danger" data-category="no-results">
+                                            <div class="category-header">
+                                                <div class="category-icon">❌</div>
+                                                <div class="category-badge danger">Action</div>
+                                            </div>
+                                            <div class="category-content">
+                                                <div class="category-name">No Results</div>
+                                                <div class="category-count">0 ads</div>
+                                                <div class="category-description">Zero conversions</div>
+                                            </div>
+                                        </div>
+
+                                        <div class="category-item info" data-category="low-spend">
+                                            <div class="category-header">
+                                                <div class="category-icon">📊</div>
+                                                <div class="category-badge info">Monitor</div>
+                                            </div>
+                                            <div class="category-content">
+                                                <div class="category-name">Low Spend</div>
+                                                <div class="category-count">0 ads</div>
+                                                <div class="category-description">Minimal budget used</div>
+                                            </div>
+                                        </div>
+
+                                        <div class="category-item warning" data-category="ad-fatigue">
+                                            <div class="category-header">
+                                                <div class="category-icon">🔄</div>
+                                                <div class="category-badge warning">Refresh</div>
+                                            </div>
+                                            <div class="category-content">
+                                                <div class="category-name">Ad Fatigue Risk</div>
+                                                <div class="category-count">0 ads</div>
+                                                <div class="category-description">High frequency</div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- Reach & Frequency Card -->
+                            <div class="meta-analytics-card" data-metric="reach-frequency">
+                                <div class="analytics-card-header">
+                                    <div class="analytics-card-icon">
+                                        <i class="fas fa-users"></i>
+                                    </div>
+                                    <div class="analytics-card-trend" id="reach-trend">
+                                        <i class="fas fa-minus"></i>
+                                        <span>--</span>
+                                    </div>
+                                </div>
+                                <div class="analytics-card-content">
+                                    <div class="analytics-card-title">Reach & Frequency</div>
+                                    <div class="analytics-card-value" id="reach-primary-value">0</div>
+                                    <div class="analytics-card-subtitle">Unique audience reached</div>
+                                    <div class="analytics-card-date-range" id="reach-date-range">
+                                        <i class="fas fa-calendar-alt"></i>
+                                        <span>Loading date range...</span>
+                                    </div>
+
+                                    <!-- Reach & Frequency Metrics -->
+                                    <div class="reach-frequency-breakdown">
+                                        <div class="reach-metric">
+                                            <div class="metric-label">Frequency</div>
+                                            <div class="metric-value" id="avg-frequency">0.0x</div>
+                                            <div class="metric-status" id="frequency-status">Good</div>
+                                        </div>
+                                        <div class="reach-metric">
+                                            <div class="metric-label">Cost/Reach</div>
+                                            <div class="metric-value" id="cost-per-reach">$0.00</div>
+                                            <div class="metric-status" id="cost-reach-status">Excellent</div>
+                                        </div>
+                                        <div class="reach-metric">
+                                            <div class="metric-label">Efficiency</div>
+                                            <div class="metric-value" id="reach-efficiency">0.0%</div>
+                                            <div class="metric-status" id="efficiency-status">Good</div>
+                                        </div>
+                                    </div>
+
+                                    <!-- Reach & Frequency Explanation -->
+                                    <div class="metric-explanation">
+                                        <div class="explanation-header">
+                                            <i class="fas fa-lightbulb"></i>
+                                            <span>Why This Matters</span>
+                                        </div>
+                                        <div class="explanation-content">
+                                            <p><strong>Reach</strong> measures how many unique people saw your ads, while <strong>Frequency</strong> shows how often each person saw them on average.</p>
+                                            <p>Optimal frequency (1.5-3.0x) ensures message retention without ad fatigue. Too low means missed opportunities; too high wastes budget and annoys users.</p>
+                                            <p>This balance directly impacts brand awareness, recall, and conversion rates while maximizing your advertising ROI.</p>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- Campaign Efficiency Card -->
+                            <div class="meta-analytics-card" data-metric="campaign-efficiency">
+                                <div class="analytics-card-header">
+                                    <div class="analytics-card-icon">
+                                        <i class="fas fa-chart-line"></i>
+                                    </div>
+                                    <div class="analytics-card-trend" id="efficiency-trend">
+                                        <i class="fas fa-minus"></i>
+                                        <span>--</span>
+                                    </div>
+                                </div>
+                                <div class="analytics-card-content">
+                                    <div class="analytics-card-title">Campaign Efficiency</div>
+                                    <div class="analytics-card-value" id="efficiency-primary-value">$0.00</div>
+                                    <div class="analytics-card-subtitle">Cost per 1,000 impressions</div>
+                                    <div class="analytics-card-date-range" id="efficiency-date-range">
+                                        <i class="fas fa-calendar-alt"></i>
+                                        <span>Loading date range...</span>
+                                    </div>
+
+                                    <!-- Campaign Efficiency Metrics -->
+                                    <div class="efficiency-breakdown">
+                                        <div class="efficiency-metric">
+                                            <div class="metric-label">CPM</div>
+                                            <div class="metric-value" id="campaign-cpm">$0.00</div>
+                                            <div class="metric-status" id="cpm-status">Good</div>
+                                        </div>
+                                        <div class="efficiency-metric">
+                                            <div class="metric-label">Results/1K Reach</div>
+                                            <div class="metric-value" id="results-per-k-reach">0.0</div>
+                                            <div class="metric-status" id="results-reach-status">Excellent</div>
+                                        </div>
+                                        <div class="efficiency-metric">
+                                            <div class="metric-label">Performance</div>
+                                            <div class="metric-value" id="overall-performance">Good</div>
+                                            <div class="metric-status" id="performance-status">Optimizing</div>
+                                        </div>
+                                    </div>
+
+                                    <!-- Campaign Efficiency Explanation -->
+                                    <div class="metric-explanation">
+                                        <div class="explanation-header">
+                                            <i class="fas fa-lightbulb"></i>
+                                            <span>Why This Matters</span>
+                                        </div>
+                                        <div class="explanation-content">
+                                            <p><strong>CPM (Cost Per Mille)</strong> measures how much you pay for 1,000 impressions, indicating your bidding competitiveness and audience targeting precision.</p>
+                                            <p>Lower CPM means more efficient ad delivery, while <strong>Results per 1K Reach</strong> shows how effectively your creative converts unique viewers into actions.</p>
+                                            <p>Together, these metrics reveal campaign optimization opportunities and help maximize your return on ad spend through better targeting and creative performance.</p>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+
+                        </div>
+                    </div>
+
+                    <!-- Recent Performance - Full Width Monthly Breakdown Card -->
+                    <div class="recent-performance-card" data-metric="recent-performance">
+                        <div class="recent-performance-header">
+                            <div class="recent-performance-title">
+                                <div class="title-icon">
+                                    <i class="fas fa-calendar-alt"></i>
+                                </div>
+                                <div class="title-content">
+                                    <h3>Recent Performance</h3>
+                                    <p>Last 3 months breakdown and month-to-month comparison</p>
+                                </div>
+                            </div>
+                            <div class="recent-performance-date-range" id="recent-performance-date-range">
+                                <i class="fas fa-calendar-check"></i>
+                                <span>Loading date range...</span>
+                            </div>
+                        </div>
+
+                        <div class="monthly-breakdown-grid">
+                            <!-- March 2025 -->
+                            <div class="monthly-card" data-month="march">
+                                <div class="monthly-header">
+                                    <div class="month-name">March 2025</div>
+                                    <div class="month-trend" id="march-trend">
+                                        <i class="fas fa-minus"></i>
+                                        <span>--</span>
+                                    </div>
+                                </div>
+                                <div class="monthly-metrics">
+                                    <div class="metric-row">
+                                        <div class="metric-item">
+                                            <div class="metric-label">Ad Spend</div>
+                                            <div class="metric-value" id="march-spend">$0.00</div>
+                                        </div>
+                                        <div class="metric-item">
+                                            <div class="metric-label">Results</div>
+                                            <div class="metric-value" id="march-results">0</div>
+                                        </div>
+                                    </div>
+                                    <div class="metric-row">
+                                        <div class="metric-item">
+                                            <div class="metric-label">Reach</div>
+                                            <div class="metric-value" id="march-reach">0</div>
+                                        </div>
+                                        <div class="metric-item">
+                                            <div class="metric-label">CPR</div>
+                                            <div class="metric-value" id="march-cpr">$0.00</div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- April 2025 -->
+                            <div class="monthly-card" data-month="april">
+                                <div class="monthly-header">
+                                    <div class="month-name">April 2025</div>
+                                    <div class="month-trend" id="april-trend">
+                                        <i class="fas fa-minus"></i>
+                                        <span>--</span>
+                                    </div>
+                                </div>
+                                <div class="monthly-metrics">
+                                    <div class="metric-row">
+                                        <div class="metric-item">
+                                            <div class="metric-label">Ad Spend</div>
+                                            <div class="metric-value" id="april-spend">$0.00</div>
+                                        </div>
+                                        <div class="metric-item">
+                                            <div class="metric-label">Results</div>
+                                            <div class="metric-value" id="april-results">0</div>
+                                        </div>
+                                    </div>
+                                    <div class="metric-row">
+                                        <div class="metric-item">
+                                            <div class="metric-label">Reach</div>
+                                            <div class="metric-value" id="april-reach">0</div>
+                                        </div>
+                                        <div class="metric-item">
+                                            <div class="metric-label">CPR</div>
+                                            <div class="metric-value" id="april-cpr">$0.00</div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- May 2025 -->
+                            <div class="monthly-card" data-month="may">
+                                <div class="monthly-header">
+                                    <div class="month-name">May 2025</div>
+                                    <div class="month-trend" id="may-trend">
+                                        <i class="fas fa-minus"></i>
+                                        <span>--</span>
+                                    </div>
+                                </div>
+                                <div class="monthly-metrics">
+                                    <div class="metric-row">
+                                        <div class="metric-item">
+                                            <div class="metric-label">Ad Spend</div>
+                                            <div class="metric-value" id="may-spend">$0.00</div>
+                                        </div>
+                                        <div class="metric-item">
+                                            <div class="metric-label">Results</div>
+                                            <div class="metric-value" id="may-results">0</div>
+                                        </div>
+                                    </div>
+                                    <div class="metric-row">
+                                        <div class="metric-item">
+                                            <div class="metric-label">Reach</div>
+                                            <div class="metric-value" id="may-reach">0</div>
+                                        </div>
+                                        <div class="metric-item">
+                                            <div class="metric-label">CPR</div>
+                                            <div class="metric-value" id="may-cpr">$0.00</div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Month-to-Month Comparison Summary -->
+                        <div class="monthly-comparison-summary">
+                            <div class="comparison-title">Month-to-Month Changes</div>
+                            <div class="comparison-grid">
+                                <div class="comparison-item">
+                                    <div class="comparison-label">Apr vs Mar</div>
+                                    <div class="comparison-value" id="apr-vs-mar">
+                                        <span class="change-indicator">--</span>
+                                        <span class="change-text">No data</span>
+                                    </div>
+                                </div>
+                                <div class="comparison-item">
+                                    <div class="comparison-label">May vs Apr</div>
+                                    <div class="comparison-value" id="may-vs-apr">
+                                        <span class="change-indicator">--</span>
+                                        <span class="change-text">No data</span>
+                                    </div>
+                                </div>
+                                <div class="comparison-item">
+                                    <div class="comparison-label">3-Month Trend</div>
+                                    <div class="comparison-value" id="three-month-trend">
+                                        <span class="change-indicator">--</span>
+                                        <span class="change-text">Calculating...</span>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+
+
+                    <!-- Loading State -->
+                    <div class="meta-loading-state" id="meta-loading-state">
+                        <div class="loading-spinner">
+                            <i class="fas fa-sync-alt fa-spin"></i>
+                        </div>
+                        <div class="loading-text">Loading Meta Ads data...</div>
+                    </div>
+
+                    <!-- Error State -->
+                    <div class="meta-error-state" id="meta-error-state" style="display: none;">
+                        <div class="error-icon">
+                            <i class="fas fa-exclamation-triangle"></i>
+                        </div>
+                        <div class="error-text">
+                            <h3>Unable to load Meta Ads data</h3>
+                            <p>Please check your connection and try refreshing the data.</p>
+                        </div>
+                        <button class="btn btn-primary" onclick="loadMetaAdsSummary()">
+                            <i class="fas fa-sync-alt"></i> Retry
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Master Overview Tab -->
+        <div class="tab-content" id="master-overview">
+            <div class="master-overview-container">
+                <!-- Executive Header -->
+                <div class="executive-header">
+                    <div class="executive-title">
+                        <h1 class="master-title">Executive Dashboard</h1>
+                        <p class="master-subtitle">Unified view of marketing performance, sales metrics, and business KPIs</p>
+                    </div>
+                    <div class="executive-controls">
+                        <div class="date-filter-group">
+                            <label for="master-date-filter">Time Period:</label>
+                            <select id="master-date-filter" class="executive-select">
+                                <option value="last-30">Last 30 Days</option>
+                                <option value="last-60">Last 60 Days</option>
+                                <option value="last-90">Last 90 Days</option>
+                                <option value="this-quarter">This Quarter</option>
+                                <option value="last-quarter">Last Quarter</option>
+                                <option value="this-year">This Year</option>
+                                <option value="all">All Time</option>
+                            </select>
+                        </div>
+                        <div class="action-buttons">
+                            <button class="btn-executive primary" id="refresh-master-overview">
+                                <i class="fas fa-sync-alt"></i> Refresh
+                            </button>
+                            <button class="btn-executive secondary" id="export-master-overview">
+                                <i class="fas fa-download"></i> Export
+                            </button>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Executive KPI Summary -->
+                <div class="executive-kpi-grid">
+                    <!-- Primary KPIs Row -->
+                    <div class="kpi-row primary-kpis">
+                        <div class="executive-kpi-card revenue clickable" id="revenue-attribution-card">
+                            <div class="kpi-header">
+                                <div class="kpi-icon">
+                                    <i class="fas fa-chart-line"></i>
+                                </div>
+                                <div class="kpi-trend" id="revenue-trend">
+                                    <i class="fas fa-arrow-up"></i>
+                                    <span>+12.5%</span>
+                                </div>
+                            </div>
+                            <div class="kpi-content">
+                                <div class="kpi-value" id="master-total-revenue">$0</div>
+                                <div class="kpi-label">Total Revenue</div>
+                                <div class="kpi-subtitle">Attributed to marketing • Click for details</div>
+                            </div>
+                            <div class="kpi-click-indicator">
+                                <i class="fas fa-external-link-alt"></i>
+                            </div>
+                        </div>
+
+                        <div class="executive-kpi-card leads">
+                            <div class="kpi-header">
+                                <div class="kpi-icon">
+                                    <i class="fas fa-users"></i>
+                                </div>
+                                <div class="kpi-trend" id="leads-trend">
+                                    <i class="fas fa-arrow-up"></i>
+                                    <span>+8.3%</span>
+                                </div>
+                            </div>
+                            <div class="kpi-content">
+                                <div class="kpi-value" id="master-total-leads">0</div>
+                                <div class="kpi-label">Total Leads</div>
+                                <div class="kpi-subtitle">All channels combined</div>
+                            </div>
+                        </div>
+
+
+                    </div>
+
+                    <!-- Secondary KPIs Row -->
+                    <div class="kpi-row secondary-kpis">
+                        <div class="executive-kpi-card spend clickable" id="adspend-modal-card">
+                            <div class="kpi-content">
+                                <div class="kpi-value" id="master-total-adspend">$0</div>
+                                <div class="kpi-label">Ad Spend</div>
+                                <div class="kpi-breakdown">
+                                    <span>Google: <span id="google-spend-breakdown">$0</span></span>
+                                    <span>Meta: <span id="meta-spend-breakdown">$0</span></span>
+                                    <span style="font-size: 0.8rem; color: rgba(255,255,255,0.6);">• Click for details</span>
+                                </div>
+                            </div>
+                            <div class="kpi-click-indicator">
+                                <i class="fas fa-external-link-alt"></i>
+                            </div>
+                        </div>
+
+                        <div class="executive-kpi-card cpl">
+                            <div class="kpi-content">
+                                <div class="kpi-value" id="master-blended-cpl">$0</div>
+                                <div class="kpi-label">Cost Per Lead</div>
+                                <div class="kpi-breakdown">
+                                    <span>Blended across all channels</span>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="executive-kpi-card sales clickable" id="totalsales-modal-card">
+                            <div class="kpi-content">
+                                <div class="kpi-value" id="master-total-sales">$0</div>
+                                <div class="kpi-label">Total Sales</div>
+                                <div class="kpi-breakdown">
+                                    <span><span id="master-total-tickets">0</span> transactions</span>
+                                    <span style="font-size: 0.8rem; color: rgba(255,255,255,0.6);">• Click for details</span>
+                                </div>
+                            </div>
+                            <div class="kpi-click-indicator">
+                                <i class="fas fa-external-link-alt"></i>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+
+
+                <!-- Revenue & Attribution Analytics -->
+                <div class="dashboard-section">
+                    <h2 class="section-title">Revenue & Attribution Analytics</h2>
+                    <div class="chart-grid">
+                        <div class="executive-chart-card wide">
+                            <div class="chart-header">
+                                <h3>Performance Timeline</h3>
+                                <div class="timeline-controls">
+                                    <button class="timeline-toggle active" data-period="daily">Daily</button>
+                                    <button class="timeline-toggle" data-period="weekly">Weekly</button>
+                                    <button class="timeline-toggle" data-period="monthly">Monthly</button>
+                                </div>
+                            </div>
+                            <div class="chart-container">
+                                <div id="performanceTimelineChart"></div>
+                            </div>
+                        </div>
+
+                        <div class="executive-chart-card">
+                            <div class="chart-header">
+                                <h3>Revenue Attribution</h3>
+                                <div class="attribution-summary">
+                                    <div class="attribution-stat">
+                                        <span class="attribution-value" id="attribution-rate">0%</span>
+                                        <span class="attribution-label">Attribution Rate</span>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="chart-container">
+                                <div id="revenueAttributionChart"></div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+
+            </div>
+        </div>
+
+        <!-- Attribution Modal -->
+        <div id="attributionModal" class="attribution-modal">
+            <div class="attribution-modal-content">
+                <div class="attribution-modal-header">
+                    <div class="attribution-modal-title">
+                        <h2>Revenue Attribution Details</h2>
+                        <p class="attribution-modal-subtitle">Detailed breakdown of marketing-attributed revenue</p>
+                    </div>
+                    <div class="attribution-modal-controls">
+                        <div class="attribution-search-container">
+                            <input type="text" id="attribution-search" placeholder="Search customers, sources, or amounts..." class="attribution-search">
+                            <i class="fas fa-search"></i>
+                        </div>
+                        <button class="btn-executive secondary" id="export-attribution-csv">
+                            <i class="fas fa-download"></i> Export CSV
+                        </button>
+                        <button class="attribution-modal-close" id="close-attribution-modal">
+                            <i class="fas fa-times"></i>
+                        </button>
+                    </div>
+                </div>
+
+                <div class="attribution-modal-body">
+                    <div class="attribution-table-container">
+                        <table class="attribution-table" id="attribution-table">
+                            <thead>
+                                <tr>
+                                    <th class="sortable" data-column="customerName">
+                                        Customer Name <i class="fas fa-sort"></i>
+                                    </th>
+                                    <th class="sortable" data-column="leadName">
+                                        Lead Name <i class="fas fa-sort"></i>
+                                    </th>
+                                    <th class="sortable" data-column="matchingMethod">
+                                        Matching Method <i class="fas fa-sort"></i>
+                                    </th>
+                                    <th class="sortable" data-column="purchaseAmount">
+                                        Purchase Amount <i class="fas fa-sort"></i>
+                                    </th>
+                                    <th class="sortable" data-column="leadSource">
+                                        Lead Source <i class="fas fa-sort"></i>
+                                    </th>
+                                    <th class="sortable" data-column="purchaseDate">
+                                        Purchase Date <i class="fas fa-sort"></i>
+                                    </th>
+                                </tr>
+                            </thead>
+                            <tbody id="attribution-table-body">
+                                <!-- Table rows will be populated by JavaScript -->
+                            </tbody>
+                        </table>
+                    </div>
+
+                    <div class="attribution-summary">
+                        <div class="attribution-summary-stats">
+                            <div class="attribution-stat">
+                                <span class="attribution-stat-label">Total Matches:</span>
+                                <span class="attribution-stat-value" id="attribution-total-count">0</span>
+                            </div>
+                            <div class="attribution-stat">
+                                <span class="attribution-stat-label">Total Revenue:</span>
+                                <span class="attribution-stat-value" id="attribution-total-revenue">$0</span>
+                            </div>
+                            <div class="attribution-stat">
+                                <span class="attribution-stat-label">Average Purchase:</span>
+                                <span class="attribution-stat-value" id="attribution-avg-purchase">$0</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Ad Spend Modal -->
+        <div id="adSpendModal" class="attribution-modal">
+            <div class="attribution-modal-content">
+                <div class="attribution-modal-header">
+                    <div class="attribution-modal-title">
+                        <h2>Advertising Investment Analysis</h2>
+                        <p class="attribution-modal-subtitle">3-month spend trends and platform performance comparison</p>
+                    </div>
+                    <div class="attribution-modal-controls">
+                        <div class="chart-view-toggle">
+                            <button class="chart-toggle-btn active" data-view="combined">Combined</button>
+                            <button class="chart-toggle-btn" data-view="google">Google Ads</button>
+                            <button class="chart-toggle-btn" data-view="meta">Meta Ads</button>
+                        </div>
+                        <button class="btn-executive secondary" id="export-adspend-csv">
+                            <i class="fas fa-download"></i> Export CSV
+                        </button>
+                        <button class="attribution-modal-close" id="close-adspend-modal">
+                            <i class="fas fa-times"></i>
+                        </button>
+                    </div>
+                </div>
+
+                <div class="attribution-modal-body">
+                    <div class="adspend-chart-container">
+                        <div id="adSpendTrendChart"></div>
+                    </div>
+
+                    <div class="adspend-summary">
+                        <div class="adspend-summary-stats">
+                            <div class="attribution-stat">
+                                <span class="attribution-stat-label">Total 3-Month Spend:</span>
+                                <span class="attribution-stat-value" id="adspend-total-spend">$0</span>
+                            </div>
+                            <div class="attribution-stat">
+                                <span class="attribution-stat-label">Average Monthly Spend:</span>
+                                <span class="attribution-stat-value" id="adspend-avg-monthly">$0</span>
+                            </div>
+                            <div class="attribution-stat">
+                                <span class="attribution-stat-label">Spend Growth:</span>
+                                <span class="attribution-stat-value" id="adspend-growth-rate">0%</span>
+                            </div>
+                        </div>
+
+                        <div class="platform-breakdown">
+                            <div class="platform-stat">
+                                <div class="platform-header">
+                                    <span class="legend-color google-ads"></span>
+                                    <span class="platform-name">Google Ads</span>
+                                </div>
+                                <div class="platform-metrics">
+                                    <div class="platform-metric">
+                                        <span class="metric-label">3-Month Total:</span>
+                                        <span class="metric-value" id="google-3month-total">$0</span>
+                                    </div>
+                                    <div class="platform-metric">
+                                        <span class="metric-label">Share of Spend:</span>
+                                        <span class="metric-value" id="google-spend-share">0%</span>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="platform-stat">
+                                <div class="platform-header">
+                                    <span class="legend-color meta-ads"></span>
+                                    <span class="platform-name">Meta Ads</span>
+                                </div>
+                                <div class="platform-metrics">
+                                    <div class="platform-metric">
+                                        <span class="metric-label">3-Month Total:</span>
+                                        <span class="metric-value" id="meta-3month-total">$0</span>
+                                    </div>
+                                    <div class="platform-metric">
+                                        <span class="metric-label">Share of Spend:</span>
+                                        <span class="metric-value" id="meta-spend-share">0%</span>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Total Sales Modal -->
+        <div id="totalSalesModal" class="attribution-modal">
+            <div class="attribution-modal-content">
+                <div class="attribution-modal-header">
+                    <div class="attribution-modal-title">
+                        <h2>Sales Performance Analysis</h2>
+                        <p class="attribution-modal-subtitle">Comprehensive breakdown of sales data and performance metrics</p>
+                    </div>
+                    <div class="attribution-modal-controls">
+                        <div class="chart-view-toggle">
+                            <button class="chart-toggle-btn active" data-view="overview">Overview</button>
+                            <button class="chart-toggle-btn" data-view="location">By Location</button>
+                            <button class="chart-toggle-btn" data-view="trends">Trends</button>
+                        </div>
+                        <button class="btn-executive secondary" id="export-sales-csv">
+                            <i class="fas fa-download"></i> Export CSV
+                        </button>
+                        <button class="attribution-modal-close" id="close-sales-modal">
+                            <i class="fas fa-times"></i>
+                        </button>
+                    </div>
+                </div>
+
+                <div class="attribution-modal-body">
+                    <div class="sales-analysis-container">
+                        <!-- Overview Charts -->
+                        <div class="sales-view-content" id="sales-overview-view">
+                            <div class="sales-charts-grid">
+                                <div class="sales-chart-card">
+                                    <h4>Sales Distribution</h4>
+                                    <div id="salesDistributionChart"></div>
+                                </div>
+                                <div class="sales-chart-card">
+                                    <h4>Transaction Volume</h4>
+                                    <div id="transactionVolumeChart"></div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Location Analysis -->
+                        <div class="sales-view-content" id="sales-location-view" style="display: none;">
+                            <div class="sales-chart-card full-width">
+                                <h4>Performance by Location</h4>
+                                <div id="locationPerformanceChart"></div>
+                            </div>
+                        </div>
+
+                        <!-- Trends Analysis -->
+                        <div class="sales-view-content" id="sales-trends-view" style="display: none;">
+                            <div class="sales-chart-card full-width">
+                                <h4>Sales Trends Over Time</h4>
+                                <div id="salesTrendsChart"></div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="sales-summary">
+                        <div class="sales-summary-stats">
+                            <div class="attribution-stat">
+                                <span class="attribution-stat-label">Total Revenue:</span>
+                                <span class="attribution-stat-value" id="sales-total-revenue">$0</span>
+                            </div>
+                            <div class="attribution-stat">
+                                <span class="attribution-stat-label">Total Transactions:</span>
+                                <span class="attribution-stat-value" id="sales-total-transactions">0</span>
+                            </div>
+                            <div class="attribution-stat">
+                                <span class="attribution-stat-label">Average Transaction:</span>
+                                <span class="attribution-stat-value" id="sales-avg-transaction">$0</span>
+                            </div>
+                            <div class="attribution-stat">
+                                <span class="attribution-stat-label">Top Location:</span>
+                                <span class="attribution-stat-value" id="sales-top-location">-</span>
+                            </div>
+                        </div>
+
+                        <div class="location-breakdown">
+                            <div class="location-stat" id="location-foley">
+                                <div class="location-header">
+                                    <span class="location-name">Quick Fix - Foley</span>
+                                </div>
+                                <div class="location-metrics">
+                                    <div class="location-metric">
+                                        <span class="metric-label">Revenue:</span>
+                                        <span class="metric-value" id="foley-revenue">$0</span>
+                                    </div>
+                                    <div class="location-metric">
+                                        <span class="metric-label">Transactions:</span>
+                                        <span class="metric-value" id="foley-transactions">0</span>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="location-stat" id="location-mobile">
+                                <div class="location-header">
+                                    <span class="location-name">Quick Fix - Mobile</span>
+                                </div>
+                                <div class="location-metrics">
+                                    <div class="location-metric">
+                                        <span class="metric-label">Revenue:</span>
+                                        <span class="metric-value" id="mobile-revenue">$0</span>
+                                    </div>
+                                    <div class="location-metric">
+                                        <span class="metric-label">Transactions:</span>
+                                        <span class="metric-value" id="mobile-transactions">0</span>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="location-stat" id="location-daphne">
+                                <div class="location-header">
+                                    <span class="location-name">Quick Fix - Daphne</span>
+                                </div>
+                                <div class="location-metrics">
+                                    <div class="location-metric">
+                                        <span class="metric-label">Revenue:</span>
+                                        <span class="metric-value" id="daphne-revenue">$0</span>
+                                    </div>
+                                    <div class="location-metric">
+                                        <span class="metric-label">Transactions:</span>
+                                        <span class="metric-value" id="daphne-transactions">0</span>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+
+    </main>
+
+
+
+    <!-- Matching Results Modal -->
+    <div id="matchingModal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <div class="header-content">
+                    <h2 id="matching-modal-title"><i class="fas fa-table"></i> Matching Results</h2>
+                </div>
+                <span class="close-modal" id="close-matching-modal">&times;</span>
+            </div>
+            <div class="modal-body">
+                <div class="matching-modal-stats">
+                    <div class="modal-stat">
+                        <div class="modal-stat-value" id="modal-match-count">0</div>
+                        <div class="modal-stat-label">Matches</div>
+                    </div>
+                    <div class="modal-stat">
+                        <div class="modal-stat-value" id="modal-match-percent">0%</div>
+                        <div class="modal-stat-label">Of Total</div>
+                    </div>
+                </div>
+                <div class="matching-modal-description" id="matching-modal-description">
+                    <!-- Description will be added dynamically -->
+                </div>
+                <div class="table-container" id="modal-matching-table">
+                    <!-- Table will be populated by JavaScript -->
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button id="export-filtered-csv" class="btn btn-primary"><i class="fas fa-file-csv"></i> Export Filtered Data</button>
+                <button id="close-matching-btn" class="btn btn-secondary">Close</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Report Modal -->
+    <div id="reportModal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <div class="header-content">
+                    <h2><i class="fas fa-file-pdf"></i> Generate Report</h2>
+                    <span class="coming-soon-badge">Coming Soon</span>
+                </div>
+                <span class="close-modal">&times;</span>
+            </div>
+            <div class="modal-body">
+                <div class="coming-soon-message">
+                    <p><i class="fas fa-tools"></i> This feature is currently under development and will be available soon.</p>
+                    <p>You can explore the options below to see what will be available in the future.</p>
+                </div>
+                <div class="report-form">
+                    <div class="form-group">
+                        <label for="report-type">Report Type:</label>
+                        <select id="report-type" class="form-control">
+                            <option value="standard">Standard Report</option>
+                            <option value="detailed">Detailed Report</option>
+                            <option value="comparative">Location Comparison</option>
+                        </select>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="report-location">Location:</label>
+                        <select id="report-location" class="form-control">
+                            <option value="all">All Locations</option>
+                            <!-- Dynamic locations will be populated by JavaScript -->
+                            <!-- Dynamic locations will be populated by JavaScript -->
+                            </select>
+                    </div>
+
+                    <div class="form-group" id="compare-location-group" style="display: none;">
+                        <label for="compare-location">Compare With:</label>
+                        <select id="compare-location" class="form-control">
+                            <option value="all">All Other Locations</option>
+                            </select>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="report-date-range">Date Range:</label>
+                        <select id="report-date-range" class="form-control">
+                            <option value="all">All Time</option>
+                            <option value="last-30">Last 30 Days</option>
+                            <option value="last-90">Last 90 Days</option>
+                            <option value="custom">Custom Range</option>
+                        </select>
+                    </div>
+
+                    <div class="form-group" id="report-custom-date-range" style="display: none;">
+                        <div class="date-range-inputs">
+                            <div>
+                                <label for="report-start-date">Start Date:</label>
+                                <input type="date" id="report-start-date" class="form-control">
+                            </div>
+                            <div>
+                                <label for="report-end-date">End Date:</label>
+                                <input type="date" id="report-end-date" class="form-control">
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="report-sections">Include Sections:</label>
+                        <div class="checkbox-group">
+                            <label><input type="checkbox" name="report-sections" value="summary" checked> Executive Summary</label>
+                            <label><input type="checkbox" name="report-sections" value="lead-volume" checked> Lead Volume</label>
+                            <label><input type="checkbox" name="report-sections" value="sources" checked> Lead Sources</label>
+                            <label><input type="checkbox" name="report-sections" value="channels" checked> Channel Distribution</label>
+                            <label><input type="checkbox" name="report-sections" value="conversion" checked> Conversion Performance</label>
+                        </div>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="report-branding">Branding:</label>
+                        <div class="radio-group">
+                            <label><input type="radio" name="report-branding" value="quickfix" checked> QuickFix</label>
+                            <label><input type="radio" name="report-branding" value="repairlift"> RepairLift</label>
+                            <label><input type="radio" name="report-branding" value="none"> No Branding</label>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button id="generate-pdf" class="btn btn-primary"><i class="fas fa-file-pdf"></i> Generate PDF (Coming Soon)</button>
+                <button id="cancel-report" class="btn btn-secondary">Close</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Performance Categories Modal -->
+    <div id="performanceCategoriesModal" class="modal">
+        <div class="modal-content large-modal">
+            <div class="modal-header">
+                <div class="header-content">
+                    <div class="category-modal-header">
+                        <div class="category-modal-icon" id="category-modal-icon">📈</div>
+                        <div class="category-modal-title">
+                            <h2 id="category-modal-title">Performance Category</h2>
+                            <div class="category-modal-count" id="category-modal-count">0 ads</div>
+                        </div>
+                    </div>
+                </div>
+                <span class="close-modal" id="close-performance-modal">&times;</span>
+            </div>
+            <div class="modal-body">
+                <!-- Data Context Notice -->
+                <div class="modal-notice">
+                    <div class="notice-content">
+                        <i class="fas fa-info-circle"></i>
+                        <span>Showing lifetime performance data (Jan 1 - May 30, 2025) for all ads in this category. These metrics are independent of the dashboard date filter.</span>
+                    </div>
+                </div>
+
+                <!-- Search and Filter Controls -->
+                <div class="modal-controls">
+                    <div class="search-container">
+                        <input type="text" id="category-search" class="search-input" placeholder="Search ads by name or campaign...">
+                        <i class="fas fa-search search-icon"></i>
+                    </div>
+                    <div class="modal-actions">
+                        <button id="export-category-csv" class="btn btn-primary">
+                            <i class="fas fa-file-csv"></i> Export CSV
+                        </button>
+                        <button id="refresh-category-data" class="btn btn-secondary">
+                            <i class="fas fa-sync-alt"></i> Refresh
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Performance Summary Stats -->
+                <div class="category-stats-grid">
+                    <div class="category-stat">
+                        <div class="stat-label">Total Spend</div>
+                        <div class="stat-value" id="category-total-spend">$0.00</div>
+                    </div>
+                    <div class="category-stat">
+                        <div class="stat-label">Total Results</div>
+                        <div class="stat-value" id="category-total-results">0</div>
+                    </div>
+                    <div class="category-stat">
+                        <div class="stat-label">Average CPR</div>
+                        <div class="stat-value" id="category-avg-cpr">$0.00</div>
+                    </div>
+                    <div class="category-stat">
+                        <div class="stat-label">Total Reach</div>
+                        <div class="stat-value" id="category-total-reach">0</div>
+                    </div>
+                </div>
+
+                <!-- Loading State -->
+                <div class="modal-loading" id="category-modal-loading">
+                    <div class="loading-spinner">
+                        <i class="fas fa-sync-alt fa-spin"></i>
+                    </div>
+                    <div class="loading-text">Loading ad performance data...</div>
+                </div>
+
+                <!-- Ads Table -->
+                <div class="table-container" id="category-ads-table-container" style="display: none;">
+                    <table class="performance-table" id="category-ads-table">
+                        <thead>
+                            <tr>
+                                <th class="sortable" data-column="ad_name">
+                                    Ad Name <i class="fas fa-sort"></i>
+                                </th>
+                                <th class="sortable" data-column="campaign_name">
+                                    Campaign <i class="fas fa-sort"></i>
+                                </th>
+                                <th class="sortable" data-column="spend">
+                                    Spend <i class="fas fa-sort"></i>
+                                </th>
+                                <th class="sortable" data-column="results">
+                                    Results <i class="fas fa-sort"></i>
+                                </th>
+                                <th class="sortable" data-column="cost_per_result">
+                                    CPR <i class="fas fa-sort"></i>
+                                </th>
+                                <th class="sortable" data-column="status">
+                                    Status <i class="fas fa-sort"></i>
+                                </th>
+                                <th class="sortable" data-column="reach">
+                                    Reach <i class="fas fa-sort"></i>
+                                </th>
+                                <th class="sortable" data-column="impressions">
+                                    Impressions <i class="fas fa-sort"></i>
+                                </th>
+                                <th class="sortable" data-column="frequency">
+                                    Frequency <i class="fas fa-sort"></i>
+                                </th>
+                            </tr>
+                        </thead>
+                        <tbody id="category-ads-tbody">
+                            <!-- Table rows will be populated by JavaScript -->
+                        </tbody>
+                    </table>
+                </div>
+
+                <!-- Empty State -->
+                <div class="modal-empty-state" id="category-empty-state" style="display: none;">
+                    <div class="empty-icon">
+                        <i class="fas fa-search"></i>
+                    </div>
+                    <div class="empty-text">
+                        <h3>No ads found</h3>
+                        <p>No ads match your search criteria or this category is empty.</p>
+                    </div>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <div class="modal-footer-info">
+                    <span id="category-results-count">0 ads shown</span>
+                </div>
+                <div class="modal-footer-actions">
+                    <button id="close-category-modal-btn" class="btn btn-secondary">Close</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <footer class="footer">
+        <div class="container footer-content">
+            <div>Last updated: <span id="last-updated-date">Loading...</span></div>
+            <div><img src="img/rl.svg" alt="RepairLift Attribution Logo" class="footer-logo-img"> Attribution System</div>
+        </div>
+    </footer>
+
+    <!-- Client Configuration - MUST load before script.js -->
+    <script src="client-config.js"></script>
+    <script src="script.js"></script>
+</body>
+</html>
