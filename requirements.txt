@@ -1,0 +1,18 @@
+# Core Flask dependencies
+Flask==2.3.3
+Flask-CORS==4.0.0
+
+# HTTP requests
+requests==2.31.0
+
+# Environment variables
+python-dotenv==1.0.0
+
+# Production WSGI servers (cross-platform)
+waitress==2.1.2        # Windows-compatible WSGI server
+gunicorn==21.2.0; sys_platform != "win32"  # Unix/Linux only
+
+# Optional: For better logging and monitoring
+# Uncomment these if you want advanced features:
+# flask-limiter==3.5.0  # Rate limiting (if needed later)
+# prometheus-flask-exporter==0.23.0  # Metrics
